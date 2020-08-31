@@ -1,0 +1,24 @@
+FROM node:10.15-jessie AS build
+
+WORKDIR /app
+ENV PATH /app/node_modules/.bin:$PATH
+
+COPY package.json package-lock.json ./
+
+RUN npm install --silent
+RUN npm install react-scripts@3.4.1 -g --silent
+
+ADD . ./
+
+ARG ENVIRONMENT=production
+RUN npm run build -- --configuration=$ENVIRONMENT
+
+FROM nginx:alpine
+
+COPY --from=build /app/build /usr/share/nginx/html
+
+COPY --from=build /app/conf.d /etc/nginx/conf.d
+
+EXPOSE 3000
+
+CMD ["nginx", "-g", "daemon off;"]

@@ -1,0 +1,23 @@
+.Container {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 20px;
+  border-radius: 8px 8px 6px 6px;
+  background: linear-gradient(#cecece, #dfdede);
+  border: 2px solid #dcdcdc;
+}
+
+.Container .Header {
+  padding: 6px 12px 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+	background-color: #dcdcdc;
+}
+
+.Container .Content {
+  padding: 12px;
+  border-radius: 2px;
+  background: linear-gradient(to bottom, #ffffff 5%, #f6f6f6 100%);
+	background-color: #ffffff;
+}

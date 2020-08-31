@@ -1,0 +1,39 @@
+version: "3"
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - ./backend/.env
+    ports:
+      - 8000:8000
+    volumes:
+      - ./backend:/app
+      - ./backend/media:/app/media
+      - ./backend/static:/app/static
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile-prod
+    ports:
+      - 3000:80
+    volumes:
+      - ./frontend/src:/app/src
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - 80:80
+
+  postgres:
+    image: postgres:12.2
+    ports:
+      - 5432:5432
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./pg-data:/var/lib/postgresql/data

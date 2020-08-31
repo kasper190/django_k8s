@@ -1,0 +1,27 @@
+ul.pagination {
+  display: inline-block;
+  margin: 20px 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+ul.pagination li {
+  display: inline;
+  padding: 8px 16px;
+}
+
+ul.pagination li.active {
+  background-color: #656565;
+  border-radius: 5px;
+  color: white;
+  font-weight: bold;
+}
+
+ul.pagination li:hover:not(.active) {
+  background-color: #ddd;
+  border-radius: 5px;
+}
+
+.Center {
+  text-align: center;
+}

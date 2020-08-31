@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  minReadySeconds: 30
+  selector:
+    matchLabels:
+      app: backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: kasperapptimia/guestbook:backend
+        ports:
+          - name: backend-port
+            containerPort: 8000
+        livenessProbe:
+          httpGet:
+            path: /api/health-check/
+            port: backend-port
+          failureThreshold: 1
+          periodSeconds: 10
+        startupProbe:
+          httpGet:
+            path: /api/health-check/
+            port: backend-port
+          failureThreshold: 30
+          periodSeconds: 10
+        envFrom:
+        - secretRef:
+            name: backend
+        - secretRef:
+            name: postgres
+      initContainers:
+      - name: wait-for-postgres
+        image: kasperapptimia/django_k8s:backend
+        command: ['python3', 'wait-for-postgres.py']
+        envFrom:
+        - secretRef:
+            name: postgres
+      - name: collectstatic
+        image: kasperapptimia/guestbook:backend
+        command: ['python3', 'manage.py', 'collectstatic', '--noinput']
+        envFrom:
+        - secretRef:
+            name: backend
+      imagePullSecrets:
+      - name: regcred
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: django-migrations
+spec:
+  template:
+    spec:
+      containers:
+      - name: backend
+        image: kasperapptimia/guestbook:backend
+        command: ['python3', 'manage.py', 'migrate', '--noinput']
+        envFrom:
+        - secretRef:
+            name: backend
+        - secretRef:
+            name: postgres
+      initContainers:
+      - name: wait-for-postgres
+        image: kasperapptimia/guestbook:backend
+        command: ['python3', 'wait-for-postgres.py']
+        envFrom:
+        - secretRef:
+            name: postgres
+      restartPolicy: Never
+  backoffLimit: 5
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  selector:
+    app: backend
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend
+type: Opaque
+stringData:
+  DEBUG: 'True'
+  SECRET_KEY: -gac=qm84n^qz6rueq0h#+2(@(o*13!w1og_j$+lk(lc!4zh!p
+  STATIC_URL: /api/static/
+  MEDIA_URL: /api/media/
